@@ -63,10 +63,12 @@ namespace SqlSCM.Classes
                 }
 
                 sql= _configuration.GetSection("DB")["GetAllObjects2FileCommand"];
-
                 var objList= connection.Query(sql).ToArray();
-                
                 File.WriteAllText(Path.Combine(workDir,"allobjects.json"), JsonConvert.SerializeObject(objList,Formatting.Indented));
+
+                sql = _configuration.GetSection("DB")["GetGrants"];
+                var grantsList = connection.Query(sql).ToArray();
+                File.WriteAllText(Path.Combine(workDir, "grants.json"), JsonConvert.SerializeObject(grantsList, Formatting.Indented));
 
 
             }
