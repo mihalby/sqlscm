@@ -72,7 +72,7 @@ After each restart appication you must execute action "start service" now.
   "git": {
     "user.email": "test@test.us",
     "user.name": "testUser",
-    "remote": "git@gitlabidea.git.gt:sqlscm/test.git"
+    "remote": "none"
   }
 
 }
