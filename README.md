@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/mihalby/sqlscm.svg?branch=master)](https://travis-ci.com/mihalby/sqlscm)
+[![Docker Build](https://img.shields.io/docker/automated/mihalby/sqlscm.svg)](https://hub.docker.com/r/mihalby/sqlscm)
 # Source code control of programmatic and other objects for MS SQL server
 
 ## Build from source code
