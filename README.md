@@ -14,6 +14,7 @@
  dotnet sqlscm.dll
 ```
 Manage you app from swagger UI https://yourhost:8000/swagger
+
 ### before run
 In you app folder(/app) create cfg(/app/cfg) directory. Generate new certificate file(pfx format) for ssl use. And move it or you existing pfx to cfg folder.  You find sample pfx file in this repo /cfg/aspncer.pfx, password for this file is 123123. 
 Create log4net.config file in /cfg directory, you find example /cfg/log4net.config.
@@ -23,6 +24,11 @@ Create settings.json file in /app/cfg folder. Copy to you app folder `SqlSCM.xml
 Go to https://yourhost:8000/swagger and execute `/api/SCM/Init GetFull` method on SCM controller. This action get all objects from db and initialise
 your repository in ProjectFolder.After this step you can start service for periodicaly poll db for changes - `/api/SCM/Start Start service`.
 After each restart appication you must execute action "start service" now.
+
+## Docker
+Docker images are available on [DockerHub.](https://cloud.docker.com/repository/docker/mihalby/sqlscm)
+You can launch a container for trying it out with
+`$ docker run --privileged=true -e "TZ=YouTZ" -d -v /path_to_log:/app/logs -v /path_2_cfg:/app/cfg -v /path_2_project:/app/folders/project -p 8110:8000 --name mySQLSCM mihalby/sqlscm:latest`
 
 ## settings.json
 - SSL:pfxPassword - password for pfx file.
