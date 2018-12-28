@@ -14,7 +14,7 @@ Manage you app from swagger UI https://yourhost:8000/swagger
 ### before run
 In you app folder(/app) create cfg(/app/cfg) directory. Generate new certificate file(pfx format) for ssl use. And move it or you existing pfx to cfg folder.  You find sample pfx file in this repo /cfg/aspncer.pfx, password for this file is 123123. 
 Create log4net.config file in /cfg directory, you find example /cfg/log4net.config.
-Create settings.json file in /app/cfg folder.
+Create settings.json file in /app/cfg folder. Copy to you app folder `SqlSCM.xml` file for correct swagger UI work.
 
 ## First run
 Go to https://yourhost:8000/swagger and execute `/api/SCM/Init GetFull` method on SCM controller. This action get all objects from db and initialise
@@ -40,6 +40,7 @@ After each restart appication you must execute action "start service" now.
 ## sample folder and files structure
 ```
 /App
+  SqlSCM.xml #for swagger
   /cfg
     settings.json
     aspncer.pfx
