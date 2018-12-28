@@ -31,9 +31,10 @@ namespace SqlSCM.Classes
                 }
             };
             process.Start();
-            
+
+            logger.LogInformation(string.Format("Execute command -{0} {1}- in folder {2}", process.StartInfo.FileName, process.StartInfo.Arguments,workDir));
             string result = process.StandardOutput.ReadToEnd();
-            logger.LogInformation(string.Format("Execute command -{0} {1}-", process.StartInfo.FileName, process.StartInfo.Arguments));
+            
 
             process.WaitForExit();
             logger.LogInformation(string.Format("Execute command result -{0} {1}- exit code {2} result {3}",
