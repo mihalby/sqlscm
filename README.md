@@ -17,6 +17,7 @@ Create settings.json file in /app/cfg folder.
 - DB:GetCommand - command for get objects from db - `do not change it!!`
 - DB:FullGetCommand - command for get all objects
 - DB:GetAllObjects2FileCommand - this command get all objects small decsription defined types for export to json file.
+- DB:TimeOut - getter timeout
 
 - Folders:ProjectFolder - path to you local git repository. 
 `!!!Important - this folder may be exist and contain subfolders P and FN.`
@@ -25,6 +26,18 @@ Create settings.json file in /app/cfg folder.
 - git:user.name - your git username
 - git:remote - url to you remote repo. Support http, https or ssh. If you use ssh you need generate or export ssh keys.
 
+## sample folder and files structure
+```
+/App
+  /cfg
+    settings.json
+    aspncer.pfx
+    log4net.config
+  /logs
+  /Project
+    /P
+    /FN
+```
 ## settings.json sample
 ```
 {
