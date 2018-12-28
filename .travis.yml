@@ -1,5 +1,7 @@
 language: csharp
 mono: none
 dotnet: 2.2
+os: 
+ - windows
 script:
  - dotnet restore
