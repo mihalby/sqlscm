@@ -18,7 +18,8 @@ Create settings.json file in /app/cfg folder.
 - DB:FullGetCommand - command for get all objects
 - DB:GetAllObjects2FileCommand - this command get all objects small decsription defined types for export to json file.
 
-- Folders:ProjectFolder - path to you local git repository. !!!Important - this folder may be exist and contain subfolders P and FN.
+- Folders:ProjectFolder - path to you local git repository. 
+`!!!Important - this folder may be exist and contain subfolders P and FN.`
 
 - git:user.email - your git user email
 - git:user.name - your git username
