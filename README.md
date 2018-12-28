@@ -55,7 +55,7 @@ Create settings.json file in /app/cfg folder.
     "key": "jwt key"
   },
   "Folders": {
-    "ProjectFolder": "./Folders/Project"
+    "ProjectFolder": "./Project"
   },
   "git": {
     "user.email": "test@test.us",
