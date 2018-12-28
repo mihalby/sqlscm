@@ -6,6 +6,11 @@
  dotnet build "sqlscm.csproj" -c Release -o /app
  ```
 ## Run
+```
+ cd /app
+ dotnet sqlscm.dll
+```
+### before run
 In you app folder(/app) create cfg(/app/cfg) directory. Generate new certificate file(pfx format) for ssl use. And move it or you existing pfx to cfg folder.  You find sample pfx file in this repo /cfg/aspncer.pfx, password for this file is 123123. 
 Create log4net.config file in /cfg directory, you find example /cfg/log4net.config.
 Create settings.json file in /app/cfg folder.
