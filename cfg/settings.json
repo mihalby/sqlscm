@@ -1,0 +1,24 @@
+{
+  "SSL": {
+    "pfxPassword": "123123"
+  },
+  "DB": {
+    "ConStr": "workstation id=sqlscm;packet size=4096;user id=username;data source=server;persist security info=False;initial catalog=DB;password=pwd",
+    "GetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN') AND modify_date>=@ADate",
+    "FullGetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN')",
+    "GetAllObjects2FileCommand":"SELECT name,xtype,crdate FROM sysobjects WITH (nolock) WHERE xtype IN ('U','P','FN','V','TF') ORDER BY xtype,name",
+    "TimeOut": "40"
+  },
+  "Jwt": {
+    "key": "jwt key"
+  },
+  "Folders": {
+    "ProjectFolder": "./Folders/Project"
+  },
+  "git": {
+    "user.email": "test@test.us",
+    "user.name": "testUser",
+    "remote": "git@gitlabidea.git.gt:sqlscm/test.git"
+  }
+
+}

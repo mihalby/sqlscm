@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SqlSCM</name>
+    </assembly>
+    <members>
+        <member name="M:SqlSCM.Controllers.SCMController.GitExec(System.String)">
+            <summary>
+            Execute git command
+            </summary>
+            <param name="command"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SqlSCM.Controllers.SCMController.Init">
+            <summary>
+            GetFull 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SqlSCM.Controllers.SCMController.Stop">
+            <summary>
+            Stop service
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SqlSCM.Controllers.SCMController.Start">
+            <summary>
+            Start service
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SqlSCM.Controllers.SCMController.IsUp">
+            <summary>
+            Get bgworker status
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SqlSCM.Controllers.SCMController.GetSSHKey">
+            <summary>
+            Get current ssh keypair
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SqlSCM.Controllers.SCMController.SSHGen">
+            <summary>
+            SSH generate new keypair
+            </summary>
+            <returns>Open key</returns>
+        </member>
+        <member name="M:SqlSCM.Controllers.SCMController.LoadSSHKeys">
+            <summary>
+            Load and copy id_rsa and id_rsa.pub from cfg directory to ./ssh/
+            Existing files replaced.
+            </summary>
+            <returns>If load is  good - return Ok. If return warning you must see log.</returns>
+        </member>
+    </members>
+</doc>

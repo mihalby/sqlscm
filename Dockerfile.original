@@ -1,0 +1,32 @@
+FROM microsoft/dotnet:2.2-aspnetcore-runtime-nanoserver-sac2016 AS base
+WORKDIR /app
+#EXPOSE 80
+EXPOSE 8000
+
+#install git
+WORKDIR /
+COPY ["mingit.zip", "/" ] 
+RUN Expand-Archive c:\MinGit.zip -DestinationPath c:\MinGit;
+#COPY ["mingit.zip", "/" ] \
+RUN $env:PATH = $env:PATH + ';C:\mingit\cmd\;C:\mingit\cmd'; \
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\' -Name Path -Value $env:PATH
+
+FROM microsoft/dotnet:2.2-sdk-nanoserver-sac2016 AS build
+WORKDIR /src
+COPY [".", "SqlSCM/"]
+RUN dotnet restore "SqlSCM/SqlSCM.csproj"
+COPY . .
+WORKDIR "/src/SqlSCM"
+RUN dotnet build "SqlSCM.csproj" -c Release -o /app
+
+FROM build AS publish
+RUN dotnet publish "SqlSCM.csproj" -c Release -o /app
+
+FROM base AS final
+WORKDIR /app
+
+COPY --from=publish /app .
+COPY ["aspncer.pfx", "."]
+COPY ["SqlSCM.xml", "."]
+RUN del  C:\app\appsettings.json
+ENTRYPOINT ["dotnet", "SqlSCM.dll"]
