@@ -5,6 +5,8 @@
  git clone https://github.com/mihalby/sqlscm.git
  dotnet build "sqlscm.csproj" -c Release -o /app
  ```
+## Precompiled
+ Precompiled binaries for released versions are available in the https://github.com/mihalby/sqlscm/blob/master/app.zip
 ## Run
 ```
  cd /app
