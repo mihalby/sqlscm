@@ -16,6 +16,11 @@ In you app folder(/app) create cfg(/app/cfg) directory. Generate new certificate
 Create log4net.config file in /cfg directory, you find example /cfg/log4net.config.
 Create settings.json file in /app/cfg folder.
 
+## First run
+Go to https://yourhost:8000/swagger and execute `/api/SCM/Init GetFull` method on SCM controller. This action get all objects from db and initialise
+your repository in ProjectFolder.After this step you cat start service for periodicaly poll db for changes - `/api/SCM/Start Start service`.
+After each restart appication you must execute action "start service" now.
+
 ## settings.json
 - SSL:pfxPassword - password for pfx file.
 
