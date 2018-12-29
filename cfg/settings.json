@@ -7,7 +7,7 @@
     "GetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN') AND modify_date>=@ADate",
     "FullGetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN')",
     "GetAllObjects2FileCommand": "SELECT name,xtype,crdate FROM sysobjects WITH (nolock) WHERE xtype IN ('U','P','FN','V','TF') ORDER BY xtype,name",
-    "GetGrants": "select  princ.name,princ.type_desc,perm.permission_name,perm.state_desc,perm.class_desc,object_name(perm.major_id) AS objectName from    sys.database_principals princ left join sys.database_permissions perm on      perm.grantee_principal_id = princ.principal_id",
+    "GetGrants": "select  princ.name,princ.type_desc,perm.permission_name,perm.state_desc,perm.class_desc,object_name(perm.major_id) AS objectName from sys.database_principals princ left join sys.database_permissions perm on      perm.grantee_principal_id = princ.principal_id",
     "TimeOut": "40"
   },
   "Jwt": {

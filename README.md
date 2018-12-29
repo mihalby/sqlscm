@@ -24,7 +24,7 @@ Create settings.json file in /app/cfg folder. Copy to you app folder `SqlSCM.xml
 ## First run
 Go to https://yourhost:8000/swagger and execute `/api/SCM/Init GetFull` method on SCM controller. This action get all objects from db and initialise
 your repository in ProjectFolder.After this step you can start service for periodicaly poll db for changes - `/api/SCM/Start Start service`.
-After each restart appication you must execute action "start service" now.
+After each restart application you must execute action "start service" now.
 
 ## Docker
 Docker images are available on [DockerHub.](https://hub.docker.com/r/mihalby/sqlscm)
@@ -45,7 +45,7 @@ You can launch a container for trying it out with
 
 - git:user.email - your git user email
 - git:user.name - your git username
-- git:remote - url to you remote repo. Support http, https or ssh. If you use ssh you need generate or export ssh keys.
+- git:remote - url to you remote repo. Support http, https or ssh. If you are use ssh you need generate or export ssh keys.
 
 ## sample folder and files structure
 ```
@@ -71,6 +71,7 @@ You can launch a container for trying it out with
     "GetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN') AND modify_date>=@ADate",
     "FullGetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN')",
     "GetAllObjects2FileCommand":"SELECT name,xtype,crdate FROM sysobjects WITH (nolock) WHERE xtype IN ('U','P','FN','V','TF') ORDER BY xtype,name",
+	"GetGrants": "select  princ.name,princ.type_desc,perm.permission_name,perm.state_desc,perm.class_desc,object_name(perm.major_id) AS objectName from sys.database_principals princ left join sys.database_permissions perm on      perm.grantee_principal_id = princ.principal_id",
     "TimeOut": "40"
   },
   "Jwt": {
