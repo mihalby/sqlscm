@@ -235,6 +235,15 @@ namespace SqlSCM.Controllers
 
             return System.IO.File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa.pub"));
         }
+        /// <summary>
+        /// Get curret open ssh key
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("SShGetCurrentKey")]
+        public string SSHGetCurrentKey()
+        {
+             return System.IO.File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa.pub"));
+        }
 
         /// <summary>
         /// Load and copy id_rsa and id_rsa.pub from cfg directory to ./ssh/
