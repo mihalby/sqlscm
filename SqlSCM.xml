@@ -47,6 +47,12 @@
             </summary>
             <returns>Open key</returns>
         </member>
+        <member name="M:SqlSCM.Controllers.SCMController.SSHGetCurrentKey">
+            <summary>
+            Get curret open ssh key
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:SqlSCM.Controllers.SCMController.LoadSSHKeys">
             <summary>
             Load and copy id_rsa and id_rsa.pub from cfg directory to ./ssh/

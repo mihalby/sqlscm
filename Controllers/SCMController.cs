@@ -235,6 +235,15 @@ namespace SqlSCM.Controllers
 
             return System.IO.File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa.pub"));
         }
+        /// <summary>
+        /// Get curret open ssh key
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("SShGetCurrentKey")]
+        public string SSHGetCurrentKey()
+        {
+             return System.IO.File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa.pub"));
+        }
 
         /// <summary>
         /// Load and copy id_rsa and id_rsa.pub from cfg directory to ./ssh/
@@ -252,8 +261,12 @@ namespace SqlSCM.Controllers
                 System.IO.File.Copy(Path.Combine(AppContext.BaseDirectory, "cfg", "id_rsa"), Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa"), true);
                 System.IO.File.Copy(Path.Combine(AppContext.BaseDirectory, "cfg", "id_rsa.pub"), Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa.pub"), true);
 
-                System.IO.File.Delete(Path.Combine(AppContext.BaseDirectory, "cfg", "id_rsa"));
-                System.IO.File.Delete(Path.Combine(AppContext.BaseDirectory, "cfg", "id_rsa.pub"));
+                var cmd = @"chmod 600 /root/.ssh/id_rsa";
+                ShellHelper.Cmd(cmd, folder, _logger);
+                cmd= @"chmod 600 /root/.ssh/id_rsa.pub";
+                ShellHelper.Cmd(cmd, folder, _logger);
+                //System.IO.File.Delete(Path.Combine(AppContext.BaseDirectory, "cfg", "id_rsa"));
+                //System.IO.File.Delete(Path.Combine(AppContext.BaseDirectory, "cfg", "id_rsa.pub"));
             }
             catch (Exception ex)
             {
