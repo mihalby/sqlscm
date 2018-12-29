@@ -185,13 +185,30 @@ namespace SqlSCM.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("GetSSHKeyPair")]
-        public string[] GetSSHKey()
+        public string GetSSHKey()
         {
             _logger.LogInformation("Get open key:"+ Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa.pub"));
-            return new string[] {
-              System.IO.File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("HOME"),".ssh","id_rsa.pub")),
-              System.IO.File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("HOME"),".ssh","id_rsa"))
-            };
+            var ret = "";
+            try
+            {
+                if (System.IO.File.Exists(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa")) & System.IO.File.Exists(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa.pub")))
+                {
+
+                    System.IO.File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "cfg", "id_rsa"),
+                        System.IO.File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa"))
+                        );
+                    System.IO.File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "cfg", "id_rsa.pub"),
+                        System.IO.File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa.pub"))
+                        );
+                }
+                ret = "Files saved to cfg folder";
+            }
+            catch(Exception ex)
+            {
+                ret = ex.Message;
+            }
+
+            return ret;
         }
 
         /// <summary>
