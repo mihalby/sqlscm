@@ -71,10 +71,10 @@ namespace SqlSCM.Controllers
                 cmd = "git init";
                 ShellHelper.Cmd(cmd, folder, _logger);
 
-                cmd= string.Format("git config --global user.email \"{0}\"",_configuration.GetSection("git")["user.email"]);
+                cmd= string.Format("git config user.email \"{0}\"",_configuration.GetSection("git")["user.email"]);
                 ShellHelper.Cmd(cmd, folder, _logger);
 
-                cmd = string.Format("git config --global user.name \"{0}\"", _configuration.GetSection("git")["user.name"]);
+                cmd = string.Format("git config user.name \"{0}\"", _configuration.GetSection("git")["user.name"]);
                 ShellHelper.Cmd(cmd, folder, _logger);
 
 
