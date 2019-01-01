@@ -65,18 +65,30 @@ namespace SqlSCM.Controllers
                 _tService.StopAsync(new System.Threading.CancellationToken());
                 //var folder = Path.Combine(AppContext.BaseDirectory, _configuration.GetSection("Folders")["ProjectFolder"].Replace(".\\", ""));
                 var service = new BDService(_configuration,_logger);
-                service.GetFullObjectsToFiles();
+                
                 var cmd= "git config --global core.autocrlf false";
                 ShellHelper.Cmd(cmd, folder,_logger);
                 cmd = "git init";
                 ShellHelper.Cmd(cmd, folder, _logger);
 
-                cmd= string.Format("git config user.email \"{0}\"",_configuration.GetSection("git")["user.email"]);
+                var remoteHTTP = _configuration.GetSection("git")["remote"];
+                if (remoteHTTP.Contains("http") || (remoteHTTP.Contains("git@") && System.IO.File.Exists(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".ssh", "id_rsa"))))
+                {
+
+                    cmd = string.Format(@"git pull {0} HEAD", remoteHTTP);
+                    ShellHelper.Cmd(cmd, folder, _logger);
+                    
+                }
+
+
+
+                cmd = string.Format("git config user.email \"{0}\"",_configuration.GetSection("git")["user.email"]);
                 ShellHelper.Cmd(cmd, folder, _logger);
 
                 cmd = string.Format("git config user.name \"{0}\"", _configuration.GetSection("git")["user.name"]);
                 ShellHelper.Cmd(cmd, folder, _logger);
 
+                service.GetFullObjectsToFiles();
 
                 cmd = "git add -A .";
                 ShellHelper.Cmd(cmd, folder, _logger);
@@ -278,6 +290,6 @@ namespace SqlSCM.Controllers
             return "Ok";
         }
 
-
+        
     }
 }

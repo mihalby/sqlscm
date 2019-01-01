@@ -7,8 +7,8 @@ RUN apk add --no-cache \
         git \
 		icu-libs \
 		openssh-keygen \
-		openssh
-        #openssl
+		openssh 
+		#openssl
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 FROM microsoft/dotnet:2.2-sdk-alpine AS build

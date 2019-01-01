@@ -30,7 +30,7 @@ After each restart application you must execute action "start service" now.
 ## Docker
 Docker images are available on [DockerHub.](https://hub.docker.com/r/mihalby/sqlscm)
 You can launch a container for trying it out with
-`$ docker run --privileged=true -e "TZ=YouTZ" -d -v /path_to_log:/app/logs -v /path_2_cfg:/app/cfg -v /path_2_project:/app/folders/project -p 8110:8000 --name mySQLSCM mihalby/sqlscm:latest`
+`$ docker pull mihalby/sqlscm:latest && docker run --privileged=true -e "TZ=YouTZ" -d -v /path_to_log:/app/logs -v /path_2_cfg:/app/cfg -v /path_2_project:/app/folders/project -p 8110:8000 --name mySQLSCM mihalby/sqlscm:latest`
 
 ## settings.json
 - SSL:pfxPassword - password for pfx file.

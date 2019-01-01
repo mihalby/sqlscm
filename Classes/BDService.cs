@@ -8,6 +8,9 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SqlServer.Management.Common;
+using Microsoft.SqlServer.Management.Smo;
+
 
 namespace SqlSCM.Classes
 {
@@ -16,6 +19,7 @@ namespace SqlSCM.Classes
         public string DBType;
         public string Body;
         public string Name;
+        public string Schema;
     }
     public class BDService
     {
@@ -64,12 +68,16 @@ namespace SqlSCM.Classes
 
                 sql= _configuration.GetSection("DB")["GetAllObjects2FileCommand"];
                 var objList= connection.Query(sql).ToArray();
+                
+
                 File.WriteAllText(Path.Combine(workDir,"allobjects.json"), JsonConvert.SerializeObject(objList,Formatting.Indented));
 
                 sql = _configuration.GetSection("DB")["GetGrants"];
                 var grantsList = connection.Query(sql).ToArray();
                 File.WriteAllText(Path.Combine(workDir, "grants.json"), JsonConvert.SerializeObject(grantsList, Formatting.Indented));
 
+                ret+=GetTablesToFile(connection, lastrun);
+                ret += GetViewsToFile(connection, lastrun);
 
             }
 
@@ -153,9 +161,141 @@ namespace SqlSCM.Classes
             return ret;
         }
 
+        private string GetTablesToFile(SqlConnection connection, System.DateTime lastrun)
+        {
+            var ret = "";
+            var sql = "SELECT name,'' AS Body, type AS DBType,SCHEMA_NAME(Schema_ID) AS [Schema] FROM sys.objects WITH (nolock) WHERE type = 'U' AND modify_date>=@ADate ORDER BY name";
+            
+            DynamicParameters parameter = new DynamicParameters();
+
+            try
+            {
+
+                if (Directory.Exists(Path.Combine(workDir, "U")))
+                {
+                    lastrun = lastrun.AddMinutes(-2);
+                }
+                else
+                {
+                    ret = "All tables";
+                    Directory.CreateDirectory(Path.Combine(workDir, "U"));
+                    lastrun = new System.DateTime(1900, 1, 1);
+                    
+                }
+                parameter.Add("@ADate", lastrun, System.Data.DbType.DateTime);
+
+                var objList = connection.Query<DBObject>(sql,parameter).ToArray();
+
+                foreach (var obj in objList)
+                {
+                    if(ret!="All tables")
+                        ret += ret + "(T) " + obj.Name; 
+                    var ddl = this.GetTableScript(obj.Name, obj.Schema);
+                    File.WriteAllLines(Path.Combine(workDir, "U", obj.Schema+"_"+obj.Name), ddl);
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("GetTablesToFile "+ex.Message);
+            }
+
+            return ret;
+        }
+
+        private string GetViewsToFile(SqlConnection connection, System.DateTime lastrun)
+        {
+            var ret = "";
+            var sql = "SELECT name,'' AS Body, type AS DBType,SCHEMA_NAME(Schema_ID) AS [Schema] FROM sys.objects WITH (nolock) WHERE type = 'V' AND modify_date>=@ADate ORDER BY name";
+
+            DynamicParameters parameter = new DynamicParameters();
+
+            try
+            {
+
+                if (Directory.Exists(Path.Combine(workDir, "V")))
+                {
+                    lastrun = lastrun.AddMinutes(-2);
+                }
+                else
+                {
+                    ret = "All views";
+                    Directory.CreateDirectory(Path.Combine(workDir, "V"));
+                    lastrun = new System.DateTime(1900, 1, 1);
+
+                }
+                parameter.Add("@ADate", lastrun, System.Data.DbType.DateTime);
+
+                var objList = connection.Query<DBObject>(sql, parameter).ToArray();
+
+                foreach (var obj in objList)
+                {
+                    if (ret != "All views")
+                        ret += ret + "(V) " + obj.Name;
+                    var ddl = this.GetViewScript(obj.Name, obj.Schema);
+                    File.WriteAllLines(Path.Combine(workDir, "V", obj.Schema + "_" + obj.Name), ddl);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("GetViewsToFile " + ex.Message);
+            }
+
+            return ret;
+        }
 
 
 
+        public string[] GetTableScript(string table,string schema="dbo")
+        {
+            string[] st;
+            using (SqlConnection connection = new SqlConnection(_configuration.GetSection("DB")["ConStr"]))
+            {
+                connection.Open();
+                var serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
+                st = server.Databases[serverConnection.CurrentDatabase]
+                    .Tables[table,schema]
+                    .Script(new ScriptingOptions
+                    {
+                        SchemaQualify = true,
+                        DriAll = true,
+                        Permissions =true
+                    }
+                    )
+                    .Cast<string>()
+                    .Select(s => s + "\n GO")
+                    .ToArray();
+                    
+            }
+
+            return st;
+        }
+
+        public string[] GetViewScript(string view, string schema = "dbo")
+        {
+            string[] st;
+            using (SqlConnection connection = new SqlConnection(_configuration.GetSection("DB")["ConStr"]))
+            {
+                connection.Open();
+                var serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
+                st = server.Databases[serverConnection.CurrentDatabase]
+                    .Views[view,schema]
+                    .Script(new ScriptingOptions
+                    {
+                        SchemaQualify = true,
+                        DriAll = true,
+                        Permissions = true
+                    }
+                    )
+                    .Cast<string>()
+                    .Select(s => s + "\n GO")
+                    .ToArray();
+
+            }
+
+            return st;
+        }
 
     }
 }

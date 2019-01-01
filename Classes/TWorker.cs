@@ -24,6 +24,7 @@ namespace SqlSCM.Classes
         private readonly ILogger _logger;
         private Timer _timer;
         private IConfiguration _configuration;
+        private bool imWork;
 
         
         public TimedHostedService(ILogger<TimedHostedService> logger,IConfiguration configuration)
@@ -31,7 +32,7 @@ namespace SqlSCM.Classes
             
             _logger = logger;
             _configuration = configuration;
-            
+            imWork = false;
         }
 
         public Task StartManual(CancellationToken ct)
@@ -56,22 +57,36 @@ namespace SqlSCM.Classes
 
         private void DoWork(object state)
         {
+            if (imWork) return;
+
+            imWork = true;
 
             _logger.LogInformation("Timed Background Service is working");
-            
 
-            var dbService = new BDService(_configuration,_logger);
-            var comment = dbService.GetObjectsToFiles();
+            try
+            {
+                var dbService = new BDService(_configuration, _logger);
 
-            var s = dbService.AddObjectsToGit(comment);
 
-            _logger.LogInformation(s);
+                var comment = dbService.GetObjectsToFiles();
 
-            
-            var lastRun = Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun");
-            long t = System.DateTime.Now.Ticks;
-            File.WriteAllText(lastRun, t.ToString());
+                var s = dbService.AddObjectsToGit(comment);
 
+                _logger.LogInformation(s);
+
+
+                var lastRun = Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun");
+                long t = System.DateTime.Now.Ticks;
+                File.WriteAllText(lastRun, t.ToString());
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("DoWork "+ex.Message);
+            }
+            finally
+            {
+                imWork = false;
+            }
 
         }
 
