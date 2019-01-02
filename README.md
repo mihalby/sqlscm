@@ -24,7 +24,7 @@ Create settings.json file in /app/cfg folder. Copy to you app folder `SqlSCM.xml
 
 ## First run
 Go to https://yourhost:8000/swagger and execute `/api/SCM/Init GetFull` method on SCM controller. This action get all objects from db and initialise
-your repository in ProjectFolder.After this step you can start service for periodicaly poll db for changes - `/api/SCM/Start Start service`.
+your repository in ProjectFolder. If git:remote is set git pull from remote. After this step you can start service for periodicaly poll db for changes - `/api/SCM/Start Start service`.
 After each restart application you must execute action "start service" now.
 
 ## Docker
@@ -60,6 +60,8 @@ You can launch a container for trying it out with
   /Project
     /P
     /FN
+	/U
+	/V
 ```
 ## settings.json sample
 ```

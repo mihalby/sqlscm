@@ -1,14 +1,14 @@
 FROM microsoft/dotnet:2.2-aspnetcore-runtime-alpine AS base
 WORKDIR /app
 EXPOSE 8000
-#EXPOSE 443
+
 RUN apk add --no-cache \
         bash \
         git \
 		icu-libs \
 		openssh-keygen \
 		openssh 
-		#openssl
+
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 FROM microsoft/dotnet:2.2-sdk-alpine AS build
@@ -28,4 +28,5 @@ COPY ["SqlSCM.xml", "."]
 
 COPY --from=publish /app .
 RUN rm appsettings.json
+RUN ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 ENTRYPOINT ["dotnet", "SqlSCM.dll"]
