@@ -96,6 +96,7 @@ namespace SqlSCM.Classes
 
            
             _timer?.Change(Timeout.Infinite, 0);
+            _timer.Dispose();
             
 
             return Task.CompletedTask;
@@ -109,7 +110,7 @@ namespace SqlSCM.Classes
         public bool IsUp()
         {
             if (_timer != null) return true;
-
+              
             return false;
         }
     }
