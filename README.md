@@ -9,7 +9,7 @@
  dotnet build "sqlscm.csproj" -c Release -o /app
  ```
 ## Precompiled
- Precompiled binaries for released versions are available in the https://github.com/mihalby/sqlscm/blob/master/app.zip
+ Precompiled binaries for released versions are available in the https://github.com/mihalby/sqlscm/releases
 ## Run
 ```
  cd /app
