@@ -28,5 +28,5 @@ COPY ["SqlSCM.xml", "."]
 
 COPY --from=publish /app .
 RUN rm appsettings.json
-RUN ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
+
 ENTRYPOINT ["dotnet", "SqlSCM.dll"]
