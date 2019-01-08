@@ -3,6 +3,9 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/mihalby/sqlscm.svg)](https://hub.docker.com/r/mihalby/sqlscm)
 # Source code control of programmatic and other objects for MS SQL server
 
+## How it work
+https://github.com/mihalby/sqlscm/wiki/How-it-work
+
 ## Build from source code
  ```
  git clone https://github.com/mihalby/sqlscm.git

@@ -97,6 +97,7 @@ namespace SqlSCM.Classes
            
             _timer?.Change(Timeout.Infinite, 0);
             _timer.Dispose();
+            _timer = null;
             
 
             return Task.CompletedTask;
