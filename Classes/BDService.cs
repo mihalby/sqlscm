@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
-
+using Microsoft.SqlServer.Management.Smo.Agent;
 
 namespace SqlSCM.Classes
 {
@@ -78,6 +78,7 @@ namespace SqlSCM.Classes
 
                 ret+=GetTablesToFile(connection, lastrun);
                 ret += GetViewsToFile(connection, lastrun);
+                ret += GetJobsToFiles(connection,lastrun);
 
             }
 
@@ -161,6 +162,8 @@ namespace SqlSCM.Classes
             return ret;
         }
 
+
+
         private string GetTablesToFile(SqlConnection connection, System.DateTime lastrun)
         {
             var ret = "";
@@ -243,7 +246,56 @@ namespace SqlSCM.Classes
             return ret;
         }
 
+        private string GetJobsToFiles(SqlConnection connection, System.DateTime lastrun)
+        {
+            var ret = "";
+            
+            try
+            {
 
+                if (Directory.Exists(Path.Combine(workDir, "J")))
+                {
+                    lastrun = lastrun.AddMinutes(-2);
+                }
+                else
+                {
+                    ret = "All jobs";
+                    Directory.CreateDirectory(Path.Combine(workDir, "J"));
+                    lastrun = new System.DateTime(1900, 1, 1);
+
+                }
+
+                
+                var serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
+
+                var jobs = server.JobServer.Jobs.Cast<Job>().Where(x => x.DateLastModified >= lastrun);
+
+                foreach (var job in jobs)
+                {
+                    if (ret != "All jobs")
+                        ret += ret + "(J) " + job.Name;
+                    var ddl = job.Script(
+                        new ScriptingOptions()
+                        {
+                            DriAll = true,
+                            AgentAlertJob = true,
+                            AgentNotify = true,
+                            AllowSystemObjects = true
+                        }
+                        ).Cast<string>().ToArray();
+
+                    File.WriteAllLines(Path.Combine(workDir, "J", job.Name), ddl);
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("GetJobsToFile " + ex.Message);
+            }
+
+            return ret;
+        }
 
         public string[] GetTableScript(string table,string schema="dbo")
         {
@@ -253,6 +305,7 @@ namespace SqlSCM.Classes
                 connection.Open();
                 var serverConnection = new ServerConnection(connection);
                 var server = new Server(serverConnection);
+
                 st = server.Databases[serverConnection.CurrentDatabase]
                     .Tables[table,schema]
                     .Script(new ScriptingOptions
@@ -270,6 +323,8 @@ namespace SqlSCM.Classes
 
             return st;
         }
+
+
 
         public string[] GetViewScript(string view, string schema = "dbo")
         {
