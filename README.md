@@ -65,6 +65,7 @@ You can launch a container for trying it out with
     /FN
 	/U
 	/V
+	/J
 ```
 ## settings.json sample
 ```

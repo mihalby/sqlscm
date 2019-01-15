@@ -269,7 +269,7 @@ namespace SqlSCM.Classes
                 var serverConnection = new ServerConnection(connection);
                 var server = new Server(serverConnection);
 
-                var jobs = server.JobServer.Jobs.Cast<Job>().Where(x => x.DateLastModified >= lastrun);
+                var jobs = server.JobServer.Jobs.Cast<Job>().Where(x => x.DateLastModified >= lastrun & x.DeleteLevel==CompletionAction.Never);
 
                 foreach (var job in jobs)
                 {
