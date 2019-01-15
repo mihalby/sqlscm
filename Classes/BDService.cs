@@ -246,7 +246,7 @@ namespace SqlSCM.Classes
             return ret;
         }
 
-        private string GetJobsToFiles(SqlConnection connection, System.DateTime lastrun)
+        public string GetJobsToFiles(SqlConnection connection, System.DateTime lastrun)
         {
             var ret = "";
             
@@ -273,8 +273,18 @@ namespace SqlSCM.Classes
 
                 foreach (var job in jobs)
                 {
-                    if (ret != "All jobs")
-                        ret += ret + "(J) " + job.Name;
+                    if (ret != "All jobs" | ret != "Many jobs")
+                    {
+                        try
+                        {
+                            ret += ret + "(J) " + job.Name;
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.LogWarning("Many jobs exported");
+                            ret = "Many jobs";
+                        }
+                    }
                     var ddl = job.Script(
                         new ScriptingOptions()
                         {
@@ -285,7 +295,7 @@ namespace SqlSCM.Classes
                         }
                         ).Cast<string>().ToArray();
 
-                    File.WriteAllLines(Path.Combine(workDir, "J", job.Name), ddl);
+                    File.WriteAllLines(Path.Combine(workDir, "J", job.JobID.ToString()), ddl);
                 }
                 
             }
