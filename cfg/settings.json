@@ -1,15 +1,24 @@
 {
+  "Main": {
+    "TimeOut": 40,
+    "GetAllObjects2FileCommand": "SELECT name,xtype,crdate FROM sysobjects WITH (nolock) WHERE xtype IN ('U','P','FN','V','TF') ORDER BY xtype,name",
+    "GetGrants": "select  princ.name,princ.type_desc,perm.permission_name,perm.state_desc,perm.class_desc,object_name(perm.major_id) AS objectName from sys.database_principals princ left join sys.database_permissions perm on      perm.grantee_principal_id = princ.principal_id"
+  },
   "SSL": {
     "pfxPassword": "123123"
   },
-  "DB": {
-    "ConStr": "workstation id=sqlscm;packet size=4096;user id=username;data source=server;persist security info=False;initial catalog=DB;password=pwd",
-    "GetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN') AND modify_date>=@ADate",
-    "FullGetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN')",
-    "GetAllObjects2FileCommand": "SELECT name,xtype,crdate FROM sysobjects WITH (nolock) WHERE xtype IN ('U','P','FN','V','TF') ORDER BY xtype,name",
-    "GetGrants": "select  princ.name,princ.type_desc,perm.permission_name,perm.state_desc,perm.class_desc,object_name(perm.major_id) AS objectName from sys.database_principals princ left join sys.database_permissions perm on      perm.grantee_principal_id = princ.principal_id",
-    "TimeOut": "40"
-  },
+  "Servers": [
+    {
+      "Name": "Server1",
+      "ConStr": "workstation id=sqlscm;packet size=4096;user id=user;data source=srv1;persist security info=False;password=pwd",
+      "DataBases": [ "DB1_1", "DB1_2" ]
+    },
+    {
+      "Name": "Server2",
+      "ConStr": "workstation id=sqlscm;packet size=4096;user id=user;data source=srv2;persist security info=False;password=pwd",
+      "DataBases": [ "DB1_1", "DB1_2" ]
+    }
+  ],
   "Jwt": {
     "key": "jwt key"
   },

@@ -53,6 +53,7 @@ namespace SqlSCM.Controllers
             //return new string[] { "value1", "value2" };
         }
 
+        /*
         /// <summary>
         /// GetFull 
         /// </summary>
@@ -107,7 +108,7 @@ namespace SqlSCM.Controllers
             }
             return "Init";
         }
-
+        */
         /// <summary>
         /// Stop service
         /// </summary>

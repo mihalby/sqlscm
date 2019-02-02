@@ -38,7 +38,7 @@ namespace SqlSCM.Classes
         public Task StartManual(CancellationToken ct)
         {
             _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(double.Parse(_configuration.GetSection("DB")["TimeOut"])));
+                TimeSpan.FromSeconds(double.Parse(_configuration.GetSection("Main")["TimeOut"])));
 
             return Task.CompletedTask;
         }
@@ -68,16 +68,16 @@ namespace SqlSCM.Classes
                 var dbService = new BDService(_configuration, _logger);
 
 
-                var comment = dbService.GetObjectsToFiles();
+                var comment = dbService.GetObjectsToFilesV2();
 
-                var s = dbService.AddObjectsToGit(comment);
+                //var s = dbService.AddObjectsToGit(comment);
 
-                _logger.LogInformation(s);
+                //_logger.LogInformation(s);
 
 
-                var lastRun = Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun");
-                long t = System.DateTime.Now.Ticks;
-                File.WriteAllText(lastRun, t.ToString());
+                //var lastRun = Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun");
+                //long t = System.DateTime.Now.Ticks;
+                //File.WriteAllText(lastRun, t.ToString());
             }
             catch(Exception ex)
             {

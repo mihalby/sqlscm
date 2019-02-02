@@ -21,6 +21,12 @@ namespace SqlSCM.Classes
         public string Name;
         public string Schema;
     }
+    public class DBServer
+    {
+        public string Name { get; set; }
+        public string ConStr { get; set; }
+        public List<string> DataBases { get; set; }
+    }
     public class BDService
     {
         private IConfiguration _configuration;
@@ -69,7 +75,7 @@ namespace SqlSCM.Classes
                 sql= _configuration.GetSection("DB")["GetAllObjects2FileCommand"];
                 var objList= connection.Query(sql).ToArray();
                 
-
+                
                 File.WriteAllText(Path.Combine(workDir,"allobjects.json"), JsonConvert.SerializeObject(objList,Formatting.Indented));
 
                 sql = _configuration.GetSection("DB")["GetGrants"];
@@ -78,7 +84,7 @@ namespace SqlSCM.Classes
 
                 ret+=GetTablesToFile(connection, lastrun);
                 ret += GetViewsToFile(connection, lastrun);
-                ret += GetJobsToFiles(connection,lastrun);
+                ret += GetJobsToFilesV2(connection,lastrun,"");
 
             }
 
@@ -162,7 +168,306 @@ namespace SqlSCM.Classes
             return ret;
         }
 
+        public string GetObjectsToFilesV2()
+        {
+            string ret = "";
+                        
 
+            var srv = _configuration.GetSection("Servers").Get<DBServer[]>().ToArray();
+            
+            foreach(var x in srv)
+            {
+                _logger.LogDebug(x.Name);
+
+                var lastrun = System.DateTime.Now.AddHours(-1);
+                lastrun = lastrun.AddMinutes(-2);
+                if (File.Exists(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_"+x.Name)))
+                {
+                    lastrun = new DateTime(long.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_"+x.Name))));
+                }
+
+                using (SqlConnection connection = new SqlConnection(x.ConStr))
+                {
+                    connection.Open();
+                    GetJobsToFilesV2(connection, lastrun,x.Name);
+                    foreach (var db in x.DataBases)
+                    {
+                        GetProceduresToFileV2(connection, lastrun, x.Name, db);
+                        GetFunctionsToFileV2(connection, lastrun, x.Name, db);
+                        GetViewsToFileV2(connection, lastrun, x.Name, db);
+
+                        GetAllObjectsAndGrantsV2(connection, lastrun, x.Name, db);
+
+                    }
+                }
+                                
+                long t = System.DateTime.Now.Ticks;
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_" + x.Name), t.ToString());
+
+            }
+            
+            return ret;
+        }
+
+        private void GetAllObjectsAndGrantsV2(SqlConnection connection, System.DateTime lastrun, string serverName, string dbName)
+        {
+            var workPath = Path.Combine(workDir, serverName, dbName);
+
+            var sql = _configuration.GetSection("Main")["GetAllObjects2FileCommand"];
+            var objList = connection.Query(sql).ToArray();
+
+            File.WriteAllText(Path.Combine(workPath, "allobjects.json"), JsonConvert.SerializeObject(objList, Formatting.Indented));
+
+            sql = _configuration.GetSection("Main")["GetGrants"];
+            var grantsList = connection.Query(sql).ToArray();
+            File.WriteAllText(Path.Combine(workPath, "grants.json"), JsonConvert.SerializeObject(grantsList, Formatting.Indented));
+
+        }
+
+        private string GetProceduresToFileV2(SqlConnection connection, System.DateTime lastrun,string serverName,string dbName)
+        {
+            var ret = "";
+            var workPath = Path.Combine(workDir, serverName, dbName);
+            try
+            {
+
+                if (Directory.Exists(Path.Combine(workPath, "P")))
+                {
+                    lastrun = lastrun.AddMinutes(-2);
+                }
+                else
+                {
+                    ret = "All SP";
+                    Directory.CreateDirectory(Path.Combine(workPath, "P"));
+                    lastrun = new System.DateTime(1900, 1, 1);
+
+                }
+
+
+                var serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
+
+                var sps = server.Databases[dbName].StoredProcedures.Cast<StoredProcedure>()
+                    .Where(x => x.DateLastModified >= lastrun);
+
+                foreach (var sp in sps)
+                {
+                    if (ret != "All SP" | ret != "Many SPs")
+                    {
+                        try
+                        {
+                            ret += ret + "(SP) " + sp.Name;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning("Many sps exported");
+                            ret = "Many SPs";
+                        }
+                    }
+                    var ddl = sp.Script(
+                        new ScriptingOptions()
+                        {
+                            SchemaQualify = true,
+                            DriAll = true,
+                            Permissions = true
+                        }
+                        ).Cast<string>().ToArray();
+
+                    File.WriteAllLines(Path.Combine(workPath,"P", sp.Name+"_"+sp.Schema), ddl);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("GetSPToFile " + ex.Message);
+            }
+
+            return ret;
+        }
+
+        private string GetFunctionsToFileV2(SqlConnection connection, System.DateTime lastrun, string serverName,string dbName)
+        {
+            var ret = "";
+            var workPath = Path.Combine(workDir, serverName, dbName);
+            try
+            {
+
+                if (Directory.Exists(Path.Combine(workPath, "FN")))
+                {
+                    lastrun = lastrun.AddMinutes(-2);
+                }
+                else
+                {
+                    ret = "All SP";
+                    Directory.CreateDirectory(Path.Combine(workPath, "FN"));
+                    lastrun = new System.DateTime(1900, 1, 1);
+
+                }
+
+
+                var serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
+
+                var sps = server.Databases[dbName].UserDefinedFunctions.Cast<UserDefinedFunction>()
+                    .Where(x => x.DateLastModified >= lastrun);
+
+                foreach (var sp in sps)
+                {
+                    if (ret != "All FN" | ret != "Many FNs")
+                    {
+                        try
+                        {
+                            ret += ret + "(FN) " + sp.Name;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning("Many FNs exported");
+                            ret = "Many FNs";
+                        }
+                    }
+                    var ddl = sp.Script(
+                        new ScriptingOptions()
+                        {
+                            SchemaQualify = true,
+                            DriAll = true,
+                            Permissions = true
+                        }
+                        ).Cast<string>().ToArray();
+
+                    File.WriteAllLines(Path.Combine(workPath, "FN", sp.Name + "_" + sp.Schema), ddl);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("GetSPToFile " + ex.Message);
+            }
+
+            return ret;
+        }
+
+        private string GetTablesToFileV2(SqlConnection connection, System.DateTime lastrun,string serverName, string dbName)
+        {
+            var ret = "";
+            var workPath = Path.Combine(workDir, serverName, dbName);
+
+            try
+            {
+
+                if (Directory.Exists(Path.Combine(workPath, "U")))
+                {
+                    lastrun = lastrun.AddMinutes(-2);
+                }
+                else
+                {
+                    ret = "All Tables";
+                    Directory.CreateDirectory(Path.Combine(workPath, "U"));
+                    lastrun = new System.DateTime(1900, 1, 1);
+
+                }
+
+
+                var serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
+
+                var sps = server.Databases[dbName].Tables.Cast<Table>()
+                    .Where(x => x.DateLastModified >= lastrun);
+
+                foreach (var sp in sps)
+                {
+                    if (ret != "All Tables" | ret != "Many Tables")
+                    {
+                        try
+                        {
+                            ret += ret + "(T) " + sp.Name;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning("Many Tables exported");
+                            ret = "Many Tables";
+                        }
+                    }
+                    var ddl = sp.Script(
+                        new ScriptingOptions()
+                        {
+                            SchemaQualify = true,
+                            DriAll = true,
+                            Permissions = true
+                        }
+                        ).Cast<string>().ToArray();
+
+                    File.WriteAllLines(Path.Combine(workPath, "U", sp.Name + "_" + sp.Schema), ddl);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("GetTablesToFile " + ex.Message);
+            }
+
+            return ret;
+        }
+
+        private string GetViewsToFileV2(SqlConnection connection, System.DateTime lastrun, string serverName, string dbName)
+        {
+            var ret = "";
+            var workPath = Path.Combine(workDir, serverName, dbName);
+            try
+            {
+
+                if (Directory.Exists(Path.Combine(workPath, "V")))
+                {
+                    lastrun = lastrun.AddMinutes(-2);
+                }
+                else
+                {
+                    ret = "All Tables";
+                    Directory.CreateDirectory(Path.Combine(workPath, "V"));
+                    lastrun = new System.DateTime(1900, 1, 1);
+
+                }
+
+
+                var serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
+
+                var sps = server.Databases[dbName].Views.Cast<View>()
+                    .Where(x => x.DateLastModified >= lastrun);
+
+                foreach (var sp in sps)
+                {
+                    if (ret != "All View" | ret != "Many Views")
+                    {
+                        try
+                        {
+                            ret += ret + "(V) " + sp.Name;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning("Many Views exported");
+                            ret = "Many Views";
+                        }
+                    }
+                    var ddl = sp.Script(
+                        new ScriptingOptions()
+                        {
+                            SchemaQualify = true,
+                            DriAll = true,
+                            Permissions = true
+                        }
+                        ).Cast<string>().ToArray();
+
+                    File.WriteAllLines(Path.Combine(workPath, "V", sp.Name + "_" + sp.Schema), ddl);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("GetViewsToFile " + ex.Message);
+            }
+
+            return ret;
+        }
 
         private string GetTablesToFile(SqlConnection connection, System.DateTime lastrun)
         {
@@ -205,6 +510,8 @@ namespace SqlSCM.Classes
             return ret;
         }
 
+
+
         private string GetViewsToFile(SqlConnection connection, System.DateTime lastrun)
         {
             var ret = "";
@@ -246,21 +553,21 @@ namespace SqlSCM.Classes
             return ret;
         }
 
-        public string GetJobsToFiles(SqlConnection connection, System.DateTime lastrun)
+        public string GetJobsToFilesV2(SqlConnection connection,System.DateTime lastrun,string serverName)
         {
             var ret = "";
-            
+            var workPath = Path.Combine(workDir, serverName);
             try
             {
 
-                if (Directory.Exists(Path.Combine(workDir, "J")))
+                if (Directory.Exists(Path.Combine(workPath, "J")))
                 {
                     lastrun = lastrun.AddMinutes(-2);
                 }
                 else
                 {
                     ret = "All jobs";
-                    Directory.CreateDirectory(Path.Combine(workDir, "J"));
+                    Directory.CreateDirectory(Path.Combine(workPath, "J"));
                     lastrun = new System.DateTime(1900, 1, 1);
 
                 }
@@ -295,7 +602,7 @@ namespace SqlSCM.Classes
                         }
                         ).Cast<string>().ToArray();
 
-                    File.WriteAllLines(Path.Combine(workDir, "J", job.JobID.ToString()), ddl);
+                    File.WriteAllLines(Path.Combine(workPath, "J", job.JobID.ToString()), ddl);
                 }
                 
             }

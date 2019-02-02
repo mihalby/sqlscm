@@ -2,3 +2,4 @@ bin/
 obj/
 mingit.zip
 logs/
+appsettings.Development.json

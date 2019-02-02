@@ -26,9 +26,8 @@ Create log4net.config file in /cfg directory, you find example /cfg/log4net.conf
 Create settings.json file in /app/cfg folder. Copy to you app folder `SqlSCM.xml` file for correct swagger UI work.
 
 ## First run
-Go to https://yourhost:8000/swagger and execute `/api/SCM/Init GetFull` method on SCM controller. This action get all objects from db and initialise
-your repository in ProjectFolder. If git:remote is set git pull from remote. After this step you can start service for periodicaly poll db for changes - `/api/SCM/Start Start service`.
-After each restart application you must execute action "start service" now.
+Go to https://yourhost:8000/swagger and execute `/api/SCM/Start Start service` method on SCM controller. This action get all objects from databases, server objects and initialise
+your repository in ProjectFolder. If git:remote is set git pull from remote. After each restart application you must execute action "start service" now.
 
 ## Docker
 Docker images are available on [DockerHub.](https://hub.docker.com/r/mihalby/sqlscm)
@@ -38,14 +37,17 @@ You can launch a container for trying it out with
 ## settings.json
 - SSL:pfxPassword - password for pfx file.
 
-- DB:ConStr - connection string to you database
-- DB:GetCommand - command for get objects from db - `do not change it!!`
-- DB:FullGetCommand - command for get all objects
-- DB:GetAllObjects2FileCommand - this command get all objects small decsription defined types for export to json file.
-- DB:TimeOut - getter timeout
+- Main:TimeOut - getter timeout
+- Main:GetAllObjects2FileCommand - this command get all objects small decsription defined types for export to json file.
+- Main:GetGrants - this command get all grants to objects for export to json file.
+
+- Servers - servers array, each server contains:
+  Name - server name
+  ConStr - connection string
+  DataBases - database names array
 
 - Folders:ProjectFolder - path to you local git repository. 
-`!!!Important - this folder may be exist and contain subfolders P and FN.`
+`!!!Important - this folder may be exist.`
 
 - git:user.email - your git user email
 - git:user.name - your git username
@@ -61,26 +63,45 @@ You can launch a container for trying it out with
     log4net.config
   /logs
   /Project
-    /P
-    /FN
-	/U
-	/V
-	/J
+   /ServerName1
+     /J
+     /DataBaseName1
+      /P
+      /FN
+	  /U
+	  /V
+	 /DataBaseName2
+      /P
+      /FN
+	  /U
+	  /V 
+   /ServerName2
+    /J
+	...
 ```
 ## settings.json sample
 ```
 {
+  "Main": {
+    "TimeOut": 40,
+    "GetAllObjects2FileCommand": "SELECT name,xtype,crdate FROM sysobjects WITH (nolock) WHERE xtype IN ('U','P','FN','V','TF') ORDER BY xtype,name",
+    "GetGrants": "select  princ.name,princ.type_desc,perm.permission_name,perm.state_desc,perm.class_desc,object_name(perm.major_id) AS objectName from sys.database_principals princ left join sys.database_permissions perm on      perm.grantee_principal_id = princ.principal_id"
+  },
   "SSL": {
     "pfxPassword": "123123"
   },
-  "DB": {
-    "ConStr": "workstation id=sqlscm;packet size=4096;user id=username;data source=server;persist security info=False;initial catalog=DB;password=pwd",
-    "GetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN') AND modify_date>=@ADate",
-    "FullGetCommand": "select Name,object_definition(object_id) AS Body, type AS DBType from sys.objects WHERE (type = 'P' OR type = 'FN')",
-    "GetAllObjects2FileCommand":"SELECT name,xtype,crdate FROM sysobjects WITH (nolock) WHERE xtype IN ('U','P','FN','V','TF') ORDER BY xtype,name",
-	"GetGrants": "select  princ.name,princ.type_desc,perm.permission_name,perm.state_desc,perm.class_desc,object_name(perm.major_id) AS objectName from sys.database_principals princ left join sys.database_permissions perm on      perm.grantee_principal_id = princ.principal_id",
-    "TimeOut": "40"
-  },
+  "Servers": [
+    {
+      "Name": "Server1",
+      "ConStr": "workstation id=sqlscm;packet size=4096;user id=user;data source=srv1;persist security info=False;password=pwd",
+      "DataBases": [ "DB1_1", "DB1_2" ]
+    },
+    {
+      "Name": "Server2",
+      "ConStr": "workstation id=sqlscm;packet size=4096;user id=user;data source=srv2;persist security info=False;password=pwd",
+      "DataBases": [ "DB1_1", "DB1_2" ]
+    }
+  ],
   "Jwt": {
     "key": "jwt key"
   },
@@ -92,7 +113,6 @@ You can launch a container for trying it out with
     "user.name": "testUser",
     "remote": "none"
   }
-
 }
 ```
 ## log4net.config sample
