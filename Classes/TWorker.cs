@@ -70,9 +70,9 @@ namespace SqlSCM.Classes
 
                 var comment = dbService.GetObjectsToFilesV2();
 
-                //var s = dbService.AddObjectsToGit(comment);
+                var s = dbService.AddObjectsToGit(comment);
 
-                //_logger.LogInformation(s);
+                _logger.LogInformation(s);
 
 
                 //var lastRun = Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun");

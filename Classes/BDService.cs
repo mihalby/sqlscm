@@ -180,30 +180,38 @@ namespace SqlSCM.Classes
                 _logger.LogDebug(x.Name);
 
                 var lastrun = System.DateTime.Now.AddHours(-1);
-                lastrun = lastrun.AddMinutes(-2);
+                
                 if (File.Exists(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_"+x.Name)))
                 {
                     lastrun = new DateTime(long.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_"+x.Name))));
                 }
 
-                using (SqlConnection connection = new SqlConnection(x.ConStr))
+                lastrun = lastrun.AddMinutes(-2);
+
+                try
                 {
-                    connection.Open();
-                    GetJobsToFilesV2(connection, lastrun,x.Name);
-                    foreach (var db in x.DataBases)
+                    using (SqlConnection connection = new SqlConnection(x.ConStr))
                     {
-                        GetProceduresToFileV2(connection, lastrun, x.Name, db);
-                        GetFunctionsToFileV2(connection, lastrun, x.Name, db);
-                        GetViewsToFileV2(connection, lastrun, x.Name, db);
+                        connection.Open();
+                        ret+=GetJobsToFilesV2(connection, lastrun, x.Name);
+                        foreach (var db in x.DataBases)
+                        {
+                            ret += GetProceduresToFileV2(connection, lastrun, x.Name, db);
+                            ret += GetFunctionsToFileV2(connection, lastrun, x.Name, db);
+                            ret += GetViewsToFileV2(connection, lastrun, x.Name, db);
 
-                        GetAllObjectsAndGrantsV2(connection, lastrun, x.Name, db);
+                            GetAllObjectsAndGrantsV2(connection, lastrun, x.Name, db);
 
+                        }
                     }
-                }
-                                
-                long t = System.DateTime.Now.Ticks;
-                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_" + x.Name), t.ToString());
 
+                    long t = System.DateTime.Now.Ticks;
+                    File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_" + x.Name), t.ToString());
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                }
             }
             
             return ret;
@@ -211,7 +219,9 @@ namespace SqlSCM.Classes
 
         private void GetAllObjectsAndGrantsV2(SqlConnection connection, System.DateTime lastrun, string serverName, string dbName)
         {
+            _logger.LogInformation(@"Begin get grants and objects def from " + serverName + " " + dbName);
             var workPath = Path.Combine(workDir, serverName, dbName);
+            connection.ChangeDatabase(dbName);
 
             var sql = _configuration.GetSection("Main")["GetAllObjects2FileCommand"];
             var objList = connection.Query(sql).ToArray();
@@ -222,10 +232,13 @@ namespace SqlSCM.Classes
             var grantsList = connection.Query(sql).ToArray();
             File.WriteAllText(Path.Combine(workPath, "grants.json"), JsonConvert.SerializeObject(grantsList, Formatting.Indented));
 
+            _logger.LogInformation(@"Complete get grants and objects def from " + serverName + " " + dbName);
+
         }
 
         private string GetProceduresToFileV2(SqlConnection connection, System.DateTime lastrun,string serverName,string dbName)
         {
+            _logger.LogInformation(@"Begin get SP from " + serverName+" "+dbName);
             var ret = "";
             var workPath = Path.Combine(workDir, serverName, dbName);
             try
@@ -281,12 +294,13 @@ namespace SqlSCM.Classes
             {
                 _logger.LogError("GetSPToFile " + ex.Message);
             }
-
+            _logger.LogInformation(@"Complete get SP from " + serverName + " " + dbName);
             return ret;
         }
 
         private string GetFunctionsToFileV2(SqlConnection connection, System.DateTime lastrun, string serverName,string dbName)
         {
+            _logger.LogInformation(@"Begin get FN from " + serverName + " " + dbName);
             var ret = "";
             var workPath = Path.Combine(workDir, serverName, dbName);
             try
@@ -336,13 +350,13 @@ namespace SqlSCM.Classes
 
                     File.WriteAllLines(Path.Combine(workPath, "FN", sp.Name + "_" + sp.Schema), ddl);
                 }
-
+                
             }
             catch (Exception ex)
             {
                 _logger.LogError("GetSPToFile " + ex.Message);
             }
-
+            _logger.LogInformation(@"Complete get FN from " + serverName + " " + dbName);
             return ret;
         }
 
@@ -410,6 +424,7 @@ namespace SqlSCM.Classes
 
         private string GetViewsToFileV2(SqlConnection connection, System.DateTime lastrun, string serverName, string dbName)
         {
+            _logger.LogInformation(@"Begin get V from " + serverName + " " + dbName);
             var ret = "";
             var workPath = Path.Combine(workDir, serverName, dbName);
             try
@@ -465,7 +480,7 @@ namespace SqlSCM.Classes
             {
                 _logger.LogError("GetViewsToFile " + ex.Message);
             }
-
+            _logger.LogInformation(@"Complete get V from " + serverName + " " + dbName);
             return ret;
         }
 
@@ -555,6 +570,7 @@ namespace SqlSCM.Classes
 
         public string GetJobsToFilesV2(SqlConnection connection,System.DateTime lastrun,string serverName)
         {
+            _logger.LogInformation(@"Begin get jobs from " + serverName);
             var ret = "";
             var workPath = Path.Combine(workDir, serverName);
             try
@@ -610,6 +626,7 @@ namespace SqlSCM.Classes
             {
                 _logger.LogError("GetJobsToFile " + ex.Message);
             }
+            _logger.LogInformation(@"Complete get jobs from " + serverName);
 
             return ret;
         }

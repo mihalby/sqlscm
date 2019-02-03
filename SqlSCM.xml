@@ -11,12 +11,6 @@
             <param name="command"></param>
             <returns></returns>
         </member>
-        <member name="M:SqlSCM.Controllers.SCMController.Init">
-            <summary>
-            GetFull 
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:SqlSCM.Controllers.SCMController.Stop">
             <summary>
             Stop service

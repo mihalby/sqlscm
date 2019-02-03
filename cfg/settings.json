@@ -11,7 +11,7 @@
     {
       "Name": "Server1",
       "ConStr": "workstation id=sqlscm;packet size=4096;user id=user;data source=srv1;persist security info=False;password=pwd",
-      "DataBases": [ "DB1_1", "DB1_2" ]
+      "DataBases": [ "DB1" ]
     },
     {
       "Name": "Server2",
