@@ -194,6 +194,7 @@ namespace SqlSCM.Classes
                     {
                         connection.Open();
                         ret+=GetJobsToFilesV2(connection, lastrun, x.Name);
+                        ret+=GetLinkedServersToFilesV2(connection, lastrun, x.Name);
                         foreach (var db in x.DataBases)
                         {
                             ret += GetProceduresToFileV2(connection, lastrun, x.Name, db);
@@ -591,7 +592,7 @@ namespace SqlSCM.Classes
                 
                 var serverConnection = new ServerConnection(connection);
                 var server = new Server(serverConnection);
-
+                
                 var jobs = server.JobServer.Jobs.Cast<Job>().Where(x => x.DateLastModified >= lastrun & x.DeleteLevel==CompletionAction.Never);
 
                 foreach (var job in jobs)
@@ -627,6 +628,67 @@ namespace SqlSCM.Classes
                 _logger.LogError("GetJobsToFile " + ex.Message);
             }
             _logger.LogInformation(@"Complete get jobs from " + serverName);
+
+            return ret;
+        }
+
+        public string GetLinkedServersToFilesV2(SqlConnection connection, System.DateTime lastrun, string serverName)
+        {
+            _logger.LogInformation(@"Begin get linked servers from " + serverName);
+            var ret = "";
+            var workPath = Path.Combine(workDir, serverName);
+            try
+            {
+
+                if (Directory.Exists(Path.Combine(workPath, "LS")))
+                {
+                    lastrun = lastrun.AddMinutes(-2);
+                }
+                else
+                {
+                    ret = "All linked servers";
+                    Directory.CreateDirectory(Path.Combine(workPath, "LS"));
+                    lastrun = new System.DateTime(1900, 1, 1);
+
+                }
+
+
+                var serverConnection = new ServerConnection(connection);
+                var server = new Server(serverConnection);
+
+                var linkedServers = server.LinkedServers.Cast<LinkedServer>().Where(x => x.DateLastModified >= lastrun);
+                    
+                foreach (var ls in linkedServers)
+                {
+                    if (ret != "All linked servers" | ret != "Many LS")
+                    {
+                        try
+                        {
+                            ret += ret + "(LS) " + ls.Name;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning("Many jobs exported");
+                            ret = "Many LS";
+                        }
+                    }
+                    var ddl = ls.Script(
+                        new ScriptingOptions()
+                        {
+                            DriAll = true,
+                            AllowSystemObjects = true
+                        }
+                        ).Cast<string>().ToArray();
+
+                    File.WriteAllLines(Path.Combine(workPath, "LS", ls.ID.ToString()), ddl);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("GetLinkedServersToFile " + ex.Message);
+            }
+            _logger.LogInformation(@"Complete get linked servers from " + serverName);
 
             return ret;
         }
