@@ -193,8 +193,8 @@ namespace SqlSCM.Classes
                     using (SqlConnection connection = new SqlConnection(x.ConStr))
                     {
                         connection.Open();
-                        if (HasChanges(connection, lastrun))
-                        {
+                        //if (HasChanges(connection, lastrun))
+                        //{
                             ret += GetJobsToFilesV2(connection, lastrun, x.Name);
                             ret += GetLinkedServersToFilesV2(connection, lastrun, x.Name);
                             foreach (var db in x.DataBases)
@@ -206,7 +206,7 @@ namespace SqlSCM.Classes
                                 GetAllObjectsAndGrantsV2(connection, lastrun, x.Name, db);
 
                             }
-                        }
+                        //}
                     }
 
                     long t = System.DateTime.Now.Ticks;
@@ -753,8 +753,8 @@ namespace SqlSCM.Classes
 
         private bool HasChanges(SqlConnection connection,DateTime lastrun)
         {
-            _logger.LogInformation("begin check changes");
-            var sql = "SELECT 1 FROM msdb.dbo.sysjobs WHERE date_modified > @ADate AND delete_level=0 UNION SELECT 2 FROM sys.Servers WHERE modify_date > @ADate UNION SELECT 3 FROM sys.objects WHERE modify_date > @ADate AND type IN ('U','P','FN','V','TF') UNION  SELECT 4 FROM sys.views WHERE modify_date > @ADate;";
+            _logger.LogInformation("begin check changes lastrun="+lastrun.ToString());
+            var sql = "SELECT 1 FROM msdb.dbo.sysjobs WHERE date_modified > @ADate AND delete_level=0 UNION SELECT 2 FROM sys.Servers WHERE modify_date > @ADate UNION SELECT 3 FROM sys.objects WHERE modify_date > @ADate AND type IN ('U','P','FN','V','TF') UNION  SELECT 4 FROM sys.views WHERE modify_date > @ADate";
 
             DynamicParameters parameter = new DynamicParameters();
 
