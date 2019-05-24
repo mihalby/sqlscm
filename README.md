@@ -65,6 +65,7 @@ You can launch a container for trying it out with
   /Project
    /ServerName1
      /J
+	 /LS
      /DataBaseName1
       /P
       /FN
@@ -77,6 +78,7 @@ You can launch a container for trying it out with
 	  /V 
    /ServerName2
     /J
+	/LS
 	...
 ```
 ## settings.json sample

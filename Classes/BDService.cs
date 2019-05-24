@@ -193,16 +193,19 @@ namespace SqlSCM.Classes
                     using (SqlConnection connection = new SqlConnection(x.ConStr))
                     {
                         connection.Open();
-                        ret+=GetJobsToFilesV2(connection, lastrun, x.Name);
-                        ret+=GetLinkedServersToFilesV2(connection, lastrun, x.Name);
-                        foreach (var db in x.DataBases)
+                        if (HasChanges(connection, lastrun))
                         {
-                            ret += GetProceduresToFileV2(connection, lastrun, x.Name, db);
-                            ret += GetFunctionsToFileV2(connection, lastrun, x.Name, db);
-                            ret += GetViewsToFileV2(connection, lastrun, x.Name, db);
+                            ret += GetJobsToFilesV2(connection, lastrun, x.Name);
+                            ret += GetLinkedServersToFilesV2(connection, lastrun, x.Name);
+                            foreach (var db in x.DataBases)
+                            {
+                                ret += GetProceduresToFileV2(connection, lastrun, x.Name, db);
+                                ret += GetFunctionsToFileV2(connection, lastrun, x.Name, db);
+                                ret += GetViewsToFileV2(connection, lastrun, x.Name, db);
 
-                            GetAllObjectsAndGrantsV2(connection, lastrun, x.Name, db);
+                                GetAllObjectsAndGrantsV2(connection, lastrun, x.Name, db);
 
+                            }
                         }
                     }
 
@@ -746,6 +749,35 @@ namespace SqlSCM.Classes
             }
 
             return st;
+        }
+
+        private bool HasChanges(SqlConnection connection,DateTime lastrun)
+        {
+
+            var sql = "SELECT 1 FROM msdb.dbo.sysjobs WHERE date_modified > @ADate "+
+                       "UNION "+
+                       "SELECT 1 FROM sys.Servers WHERE modify_date > @ADate "+
+                       "UNION+ "+
+                       "SELECT 1 FROM sys.objects WHERE modify_date > @ADate" +
+                       "UNION "+
+                       "SELECT 1 FROM sys.views WHERE modify_date > @ADate;";
+
+            DynamicParameters parameter = new DynamicParameters();
+
+            try
+            {
+
+                parameter.Add("@ADate", lastrun, System.Data.DbType.DateTime);
+                var objList = connection.Query<int>(sql, parameter).ToArray();
+                if (objList.Length > 0) return true;
+                else return false;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("HasChanges " + ex.Message);
+            }
+
+            return true;
         }
 
     }
