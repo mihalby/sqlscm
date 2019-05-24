@@ -753,14 +753,8 @@ namespace SqlSCM.Classes
 
         private bool HasChanges(SqlConnection connection,DateTime lastrun)
         {
-
-            var sql = "SELECT 1 FROM msdb.dbo.sysjobs WHERE date_modified > @ADate "+
-                       "UNION "+
-                       "SELECT 1 FROM sys.Servers WHERE modify_date > @ADate "+
-                       "UNION+ "+
-                       "SELECT 1 FROM sys.objects WHERE modify_date > @ADate " +
-                       "UNION "+
-                       "SELECT 1 FROM sys.views WHERE modify_date > @ADate;";
+            _logger.LogInformation("begin check changes");
+            var sql = "SELECT 1 FROM msdb.dbo.sysjobs WHERE date_modified > @ADate UNION SELECT 1 FROM sys.Servers WHERE modify_date > @ADate UNION  SELECT 1 FROM sys.objects WHERE modify_date > @ADate UNION  SELECT 1 FROM sys.views WHERE modify_date > @ADate;";
 
             DynamicParameters parameter = new DynamicParameters();
 
@@ -769,8 +763,16 @@ namespace SqlSCM.Classes
 
                 parameter.Add("@ADate", lastrun, System.Data.DbType.DateTime);
                 var objList = connection.Query<int>(sql, parameter).ToArray();
-                if (objList.Length > 0) return true;
-                else return false;
+                if (objList.Length > 0)
+                {
+                    _logger.LogInformation("has changes");
+                    return true;
+                }
+                else
+                {
+                    _logger.LogInformation("no changes");
+                    return false;
+                }
             }
             catch(Exception ex)
             {
