@@ -758,7 +758,7 @@ namespace SqlSCM.Classes
                        "UNION "+
                        "SELECT 1 FROM sys.Servers WHERE modify_date > @ADate "+
                        "UNION+ "+
-                       "SELECT 1 FROM sys.objects WHERE modify_date > @ADate" +
+                       "SELECT 1 FROM sys.objects WHERE modify_date > @ADate " +
                        "UNION "+
                        "SELECT 1 FROM sys.views WHERE modify_date > @ADate;";
 
