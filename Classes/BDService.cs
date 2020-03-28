@@ -128,11 +128,14 @@ namespace SqlSCM.Classes
             string ret="";
             string folder = Path.Combine(AppContext.BaseDirectory, _configuration.GetSection("Folders")["ProjectFolder"]);
             comment = System.DateTime.Now.ToString("yyyyMMdd") +" "+ comment;
-            
+
+            _logger.LogInformation("AddObjectsToGit folder {0} comment {1}", folder, comment);
             
             var cmd = "git status";
             var result =   ShellHelper.Cmd(cmd, folder, _logger);
             ret = "\n" + result;
+
+            _logger.LogInformation("AddObjectsToGit git status result {0}", result);
 
             if (result.Contains("Initial commit"))
             {
@@ -150,6 +153,7 @@ namespace SqlSCM.Classes
             {
                 cmd = "git add -A .";
                 result = ShellHelper.Cmd(cmd, folder, _logger);
+                _logger.LogInformation("AddObjectsToGit git add result {0}", result);
                 ret += "\n" + result;
                 cmd = string.Format( @"git commit -m ""{0}""", comment);
                 result = ShellHelper.Cmd(cmd, folder, _logger);
@@ -184,6 +188,10 @@ namespace SqlSCM.Classes
                 if (File.Exists(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_"+x.Name)))
                 {
                     lastrun = new DateTime(long.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "cfg", "lastrun_"+x.Name))));
+                }
+                else
+                {
+                    lastrun = DateTime.Parse("01.01.1900");
                 }
 
                 lastrun = lastrun.AddMinutes(-2);

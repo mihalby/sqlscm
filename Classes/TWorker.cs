@@ -70,6 +70,8 @@ namespace SqlSCM.Classes
 
                 var comment = dbService.GetObjectsToFilesV2();
 
+                _logger.LogInformation("Comment to git {0}", comment);
+
                 var s = dbService.AddObjectsToGit(comment);
 
                 _logger.LogInformation(s);
